@@ -805,7 +805,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (regCell) regCell.textContent = formatHoursToTime(regTotal);
                 if (ovtCell) ovtCell.textContent = formatHoursToTime(ovtTotal);
-                if (allCell) allCell.textContent = formatHoursToTime(regTotal + ovtTotal);
+
+                // Lấy hệ số admin từ dòng tương ứng để tính tổng chính xác
+                let coeff = 1.0;
+                const coeffInput = summaryRow.querySelector('.coeff-input');
+                if (coeffInput) {
+                    coeff = parseFloat(coeffInput.value) || 1.0;
+                } else {
+                    const coeffVal = summaryRow.cells[5].textContent.trim();
+                    coeff = parseFloat(coeffVal) || 1.0;
+                }
+
+                if (allCell) allCell.textContent = formatHoursToTime((regTotal * coeff) + ovtTotal);
 
                 // Cập nhật nút xóa nếu trước đó là 'Trống' (Chỉ dành cho admin)
                 if (isAdmin()) {
