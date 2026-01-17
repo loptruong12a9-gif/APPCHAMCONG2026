@@ -187,7 +187,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const employeeNameInput = document.getElementById('employee-name');
 
         if (user) {
-            userDisplay.textContent = isAdmin() ? `👤 ${user} (Admin)` : `👤 ${user}`;
+            const fullName = SHORTNAME_TO_FULLNAME[user] || user;
+            const words = fullName.split(' ');
+            const displayName = words.length >= 2 ? words.slice(-2).join(' ') : fullName;
+
+            userDisplay.textContent = isAdmin() ? `👤 ${displayName} (Admin)` : `👤 ${displayName}`;
             logoutBtn.style.display = 'inline-block';
 
             // Auto-load data for the current user if not already set
@@ -823,7 +827,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const data = {
+        const currentData = {
             name: name,
             position: document.getElementById('employee-position').value,
             month: monthPicker.value,
@@ -832,40 +836,89 @@ document.addEventListener('DOMContentLoaded', () => {
             history: []
         };
 
-        // Load existing history if any
-        const saved = localStorage.getItem(`attendance_${monthPicker.value}_${name}`);
-        if (saved) {
-            try {
-                const oldData = JSON.parse(saved);
-                data.history = oldData.history || [];
-            } catch (e) { }
-        }
-
-        // Add new history entry
-        data.history.push({
-            time: new Date().toLocaleString('vi-VN'),
-            user: getCurrentUser(),
-            action: "Lưu dữ liệu"
-        });
-
-        // Limit history to last 20 entries
-        if (data.history.length > 20) data.history = data.history.slice(-20);
-        // Lưu cả input thường và textarea
+        // Capture current UI State
         document.querySelectorAll('.attendance-input, .ovt-textarea').forEach(input => {
             if (input.value) {
-                data.entries.push({
+                currentData.entries.push({
                     date: input.dataset.date,
                     type: input.dataset.type,
                     value: input.value,
-                    multiplier: input.dataset.multiplier // Lưu thêm để summary tính chính xác
+                    multiplier: input.dataset.multiplier
                 });
             }
         });
         document.querySelectorAll('.duty-select').forEach(sel => {
-            if (sel.value) data.duties.push({ date: sel.dataset.date, value: sel.value });
+            if (sel.value) currentData.duties.push({ date: sel.dataset.date, value: sel.value });
         });
 
-        localStorage.setItem(`attendance_${monthPicker.value}_${name}`, JSON.stringify(data));
+        // Load existing data to compare
+        const saved = localStorage.getItem(`attendance_${monthPicker.value}_${name}`);
+        let oldData = { entries: [], duties: [], history: [] };
+        if (saved) {
+            try {
+                oldData = JSON.parse(saved);
+                currentData.history = oldData.history || [];
+            } catch (e) { }
+        }
+
+        // Deep Comparison for History
+        const changes = [];
+        const allDates = new Set([
+            ...oldData.entries.map(e => e.date),
+            ...currentData.entries.map(e => e.date),
+            ...oldData.duties.map(d => d.date),
+            ...currentData.duties.map(d => d.date)
+        ]);
+
+        const dateSorted = Array.from(allDates).sort();
+
+        dateSorted.forEach(dateStr => {
+            const dayNum = dateStr.split('-')[2];
+
+            // 1. Check Regular hours
+            const oldReg = oldData.entries.find(e => e.date === dateStr && e.type === 'regular')?.value || '';
+            const newReg = currentData.entries.find(e => e.date === dateStr && e.type === 'regular')?.value || '';
+            if (oldReg !== newReg) {
+                changes.push(`- Ngày ${dayNum}: Trong giờ [${oldReg || 'Trống'}] ➔ [${newReg || 'Bỏ'}]`);
+            }
+
+            // 2. Check Overtime hours
+            const oldOvt = oldData.entries.find(e => e.date === dateStr && e.type === 'overtime')?.value || '';
+            const newOvt = currentData.entries.find(e => e.date === dateStr && e.type === 'overtime')?.value || '';
+            if (oldOvt !== newOvt) {
+                changes.push(`- Ngày ${dayNum}: Ngoài giờ [${oldOvt || 'Trống'}] ➔ [${newOvt || 'Bỏ'}]`);
+            }
+
+            // 3. Check Duties
+            const oldDuty = oldData.duties.find(d => d.date === dateStr)?.value || '';
+            const newDuty = currentData.duties.find(d => d.date === dateStr)?.value || '';
+            if (oldDuty !== newDuty) {
+                changes.push(`- Ngày ${dayNum}: Trực [${oldDuty || '-'}] ➔ [${newDuty || '-'}]`);
+            }
+        });
+
+        let actionDesc = "Lưu dữ liệu";
+        if (changes.length > 0) {
+            if (changes.length > 10) {
+                actionDesc = `Chỉnh sửa hàng loạt (${changes.length} thay đổi)`;
+            } else {
+                actionDesc = changes.join('\n');
+            }
+        } else if (saved) {
+            actionDesc = "Lưu lại (không có thay đổi)";
+        }
+
+        // Add history entry
+        currentData.history.push({
+            time: new Date().toLocaleString('vi-VN'),
+            user: getCurrentUser(),
+            action: actionDesc
+        });
+
+        // Limit history to last 20 entries
+        if (currentData.history.length > 20) currentData.history = currentData.history.slice(-20);
+
+        localStorage.setItem(`attendance_${monthPicker.value}_${name}`, JSON.stringify(currentData));
         calculateTotals();
         renderSummaryTable();
     };
