@@ -690,10 +690,11 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (duty.value === 'TRỰC NGOÀI Ở NHÀ VÔ') ovtTotal += 1.0;
         });
 
+        const coeff = parseFloat(data.adminCoeff) || 1;
         return {
             regStr: formatHoursToTime(regTotal),
             ovtStr: formatHoursToTime(ovtTotal),
-            allStr: formatHoursToTime(regTotal + ovtTotal)
+            allStr: formatHoursToTime((regTotal * coeff) + ovtTotal)
         };
     };
 
@@ -855,6 +856,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 oldData = JSON.parse(saved);
                 currentData.history = oldData.history || [];
+                currentData.adminCoeff = oldData.adminCoeff; // Bảo lưu hệ số admin
             } catch (e) { }
         }
 
