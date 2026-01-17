@@ -699,13 +699,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const updateSignatureDate = () => {
         const [year, month] = monthPicker.value.split('-').map(Number);
-        // month là 1-12. Trong JS Date, month 0 là tháng 1.
-        // Vì vậy new Date(year, month, 26) sẽ là ngày 26 của tháng KẾ TIẾP tháng đã chọn.
-        // Ví dụ: Chọn tháng 2 (month=2) -> new Date(year, 2, 26) là ngày 26 tháng 3.
-        const sigDate = new Date(year, month, 26);
+        const sigDate = new Date(year, month - 1, 26); // Ngày 26 của tháng được chọn
         const sigDateEl = document.getElementById('display-sig-date');
         if (sigDateEl) {
-            sigDateEl.textContent = `Ngày 26 tháng ${sigDate.getMonth() + 1} năm ${sigDate.getFullYear()}`;
+            sigDateEl.textContent = `Ngày 26 tháng ${month} năm ${year}`;
         }
     };
 
@@ -1080,7 +1077,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="info">
                 HỌ VÀ TÊN: <span>${name.toUpperCase()}</span> &nbsp;&nbsp;&nbsp;
                 CHỨC VỤ: <span>${position}</span> &nbsp;&nbsp;&nbsp;
-                THÁNG: <span>${month}</span>
+                THÁNG: <span>${month.split('-')[1]}/${month.split('-')[0]}</span>
             </div>
             ${tableHtml}
             <div style="margin-top: 30px;">
@@ -1088,7 +1085,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <div style="margin-top: 50px; text-align: right;">
                 <div style="display: inline-block; text-align: center; width: 300px;">
-                    <p>Ngày 26 tháng ...... năm 2026</p>
+                    <p>Ngày 26 tháng ${month.split('-')[1]} năm ${month.split('-')[0]}</p>
                     <p><b>NGƯỜI LẬP BẢNG</b></p>
                     <br><br><br>
                     <p><b style="color: #ff0000; font-size: 14pt;">${name.toUpperCase()}</b></p>
@@ -1106,6 +1103,83 @@ document.addEventListener('DOMContentLoaded', () => {
         a.click();
         URL.revokeObjectURL(url);
     }
+
+    // --- DATA BACKUP & RESTORE ---
+    const backupData = () => {
+        const backup = {};
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key.startsWith('attendance_') || key.startsWith('coeffs_')) {
+                backup[key] = localStorage.getItem(key);
+            }
+        }
+
+        const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const now = new Date();
+        const timestamp = now.toISOString().split('T')[0].replace(/-/g, '_');
+        a.href = url;
+        a.download = `Sao_Luu_Cham_Cong_${timestamp}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        alert('Đã tải về file sao lưu dữ liệu!');
+    };
+
+    const restoreData = (file) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = JSON.parse(e.target.result);
+                if (confirm('Bạn có chắc chắn muốn khôi phục dữ liệu? Hành động này sẽ ghi đè lên dữ liệu hiện tại.')) {
+                    Object.keys(data).forEach(key => {
+                        localStorage.setItem(key, data[key]);
+                    });
+                    alert('Khôi phục dữ liệu thành công! Ứng dụng sẽ tự động tải lại.');
+                    location.reload();
+                }
+            } catch (err) {
+                alert('Lỗi: File dữ liệu không hợp lệ!');
+            }
+        };
+        reader.readAsText(file);
+    };
+
+    // Event listeners for backup/restore
+    const backupBtn = document.getElementById('backup-btn');
+    const restoreBtn = document.getElementById('restore-btn');
+    const restoreInput = document.getElementById('restore-input');
+
+    if (backupBtn) backupBtn.addEventListener('click', backupData);
+    if (restoreBtn) restoreBtn.addEventListener('click', () => restoreInput.click());
+    if (restoreInput) restoreInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            restoreData(e.target.files[0]);
+        }
+    });
+
+    // Control visibility of admin controls
+    const adminControls = document.getElementById('admin-data-controls');
+    if (adminControls && isAdmin()) {
+        adminControls.style.display = 'flex';
+    }
+
+    // Network status detection
+    const updateNetworkStatus = () => {
+        const indicator = document.getElementById('status-indicator');
+        if (!indicator) return;
+        if (navigator.onLine) {
+            indicator.className = 'status-indicator online';
+            indicator.title = 'Đang trực tuyến';
+        } else {
+            indicator.className = 'status-indicator offline';
+            indicator.title = 'Đang ngoại tuyến';
+        }
+    };
+
+    window.addEventListener('online', updateNetworkStatus);
+    window.addEventListener('offline', updateNetworkStatus);
+    updateNetworkStatus(); // Initial check
 
     generateTable();
 

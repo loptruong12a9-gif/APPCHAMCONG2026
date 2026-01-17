@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>BẢNG CHẤM CÔNG - 2026</title>
+    <title>BẢNG CHẤM CÔNG CÁ NHÂN - 2026</title>
 
     <!-- PWA Settings -->
     <link rel="manifest" href="manifest.json">
@@ -49,6 +49,7 @@
 
             <div class="header-right">
                 <div class="user-info-group">
+                    <div id="status-indicator" class="status-indicator online" title="Đang trực tuyến"></div>
                     <span id="current-user-display" class="user-name"></span>
                     <button id="help-btn" class="help-button" title="Hướng dẫn sử dụng">
                         <span class="help-icon">?</span>
@@ -140,6 +141,15 @@
             <div class="section-header">
                 <h2 class="section-title">DANH SÁCH NHÂN VIÊN</h2>
                 <div class="summary-controls">
+                    <div id="admin-data-controls" style="display: none; align-items: center; gap: 8px;">
+                        <button id="backup-btn" class="btn btn-backup" title="Sao lưu toàn bộ dữ liệu ra file .json">
+                            📥 SAO LƯU
+                        </button>
+                        <button id="restore-btn" class="btn btn-restore" title="Khôi phục dữ liệu từ file .json">
+                            📤 KHÔI PHỤC
+                        </button>
+                        <input type="file" id="restore-input" style="display: none;" accept=".json">
+                    </div>
                     <button id="refresh-summary" class="btn btn-print">Làm mới bảng</button>
                 </div>
             </div>
@@ -167,16 +177,16 @@
         <footer>
             <div class="signature-section">
                 <div class="signature-box">
-                    <p id="display-sig-date">Ngày 26 tháng ...... năm 2026</p>
+                    <p id="display-sig-date"></p>
                     <p class="signature-title">NGƯỜI LẬP BẢNG</p>
-                    <p class="signature-name" id="signature-name">TÂN NGUYỄN</p>
+                    <p class="signature-name" id="signature-name"></p>
                 </div>
             </div>
 
             <div class="dev-info">
                 <p>Phát triển bởi <a href="tel:0367287102" class="zalo-link">Tân Nguyễn (036.728.7102)</a></p>
                 <p class="slogan">"Code một lần- Dùng một đời"</p>
-                <p class="version-info">Version 2.0 (Updated: 20.01.2026)</p>
+                <p class="version-info">Version 2.5 (Updated: 21.01.2026)</p>
             </div>
         </footer>
 
