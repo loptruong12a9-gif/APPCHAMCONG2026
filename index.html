@@ -3,7 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>BẢNG CHẤM CÔNG CÁ NHÂN - 2026</title>
 
     <!-- PWA Settings -->
@@ -108,13 +109,13 @@
                         <td class="sticky-col label-cell">NGOÀI GIỜ</td>
                         <!-- Multi-line overtime inputs will be injected here -->
                     </tr>
-                    <tr id="calculated-overtime-row">
-                        <td class="sticky-col label-cell">Tổng cộng Ngoài giờ (x Hệ số)</td>
-                        <!-- Daily calculated overtime totals will be injected here -->
-                    </tr>
                     <tr id="duty-row">
                         <td class="sticky-col label-cell">CẤU HÌNH TRỰC</td>
                         <!-- Main duty checkboxes will be injected here -->
+                    </tr>
+                    <tr id="calculated-overtime-row">
+                        <td class="sticky-col label-cell">Tổng cộng Ngoài giờ (x Hệ số)</td>
+                        <!-- Daily calculated overtime totals will be injected here -->
                     </tr>
                 </tbody>
             </table>
@@ -126,7 +127,7 @@
                 <span id="total-regular" class="total-value">0</span>
             </div>
             <div class="total-card overtime-card">
-                <span class="total-label">Tổng cộng Ngoài giờ (x Hệ số):</span>
+                <span class="total-label">TỔNG CỘNG NGOÀI GIỜ:</span>
                 <span id="total-overtime" class="total-value">0</span>
             </div>
             <div class="total-card highlight-card">
@@ -146,13 +147,14 @@
                 <table id="summary-table">
                     <thead>
                         <tr>
-                            <th>STT</th>
-                            <th>HỌ VÀ TÊN</th>
+                            <th class="summary-sticky-stt">STT</th>
+                            <th class="summary-sticky-name">HỌ VÀ TÊN</th>
                             <th>CHỨC VỤ</th>
                             <th>TRONG GIỜ</th>
                             <th>NGOÀI GIỜ (xHS)</th>
+                            <th>HỆ SỐ</th>
                             <th>TỔNG CỘNG</th>
-                            <th>THAO TÁC</th>
+                            <th id="summary-actions-header">THAO TÁC</th>
                         </tr>
                     </thead>
                     <tbody id="summary-body">
@@ -174,6 +176,7 @@
             <div class="dev-info">
                 <p>Phát triển bởi <a href="tel:0367287102" class="zalo-link">Tân Nguyễn (036.728.7102)</a></p>
                 <p class="slogan">"Code một lần- Dùng một đời"</p>
+                <p class="version-info">Version 2.0 (Updated: 20.01.2026)</p>
             </div>
         </footer>
 
@@ -191,7 +194,8 @@
                     <p>Để sử dụng bảng chấm công, anh/chị cần đăng nhập:</p>
                     <ul>
                         <li>👉 <strong>Tên đăng nhập:</strong> Viết <strong>TÊN</strong> của mình (viết HOA).<br>
-                            <em>Ví dụ: Tên là Nguyễn Văn Tân thì nhập chữ <strong>TÂN</strong></em>
+                            <em>Lưu ý: Nếu trùng tên (như Nga, Thanh, Thảo, Ngọc) thì phải nhập <strong>ĐẦY ĐỦ HỌ TÊN CÓ
+                                    DẤU</strong>.</em>
                         </li>
                         <li>👉 <strong>Mật khẩu:</strong> Nhập số <strong>123456</strong></li>
                     </ul>
@@ -248,6 +252,24 @@
             </div>
         </div>
 
+        <!-- History Modal -->
+        <div id="history-modal" class="modal">
+            <div class="modal-content history-modal-content">
+                <div class="modal-header">
+                    <h2>LỊCH SỬ CHỈNH SỬA</h2>
+                    <button class="close-modal-btn" onclick="hideHistoryModal()">✕</button>
+                </div>
+                <div class="history-employee-info">
+                    Tên: <span id="history-employee-name">...</span>
+                </div>
+                <div class="history-list-container">
+                    <ul id="history-list" class="history-list">
+                        <!-- History items will be injected here -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+
         <!-- Login Modal -->
         <div id="login-modal" class="modal">
             <div class="modal-content">
@@ -255,7 +277,7 @@
                 <p class="modal-subtitle">Vui lòng đăng nhập để tiếp tục</p>
                 <div class="form-group">
                     <label>Tên đăng nhập:</label>
-                    <input type="text" id="login-username" placeholder="Chỉ cần TÊN (VD: TÂN, HOA, LINH...)"
+                    <input type="text" id="login-username" placeholder="Tên (VD: TÂN) hoặc ĐỦ HỌ TÊN nếu trùng..."
                         autocomplete="username">
                 </div>
                 <div class="form-group">
@@ -266,7 +288,7 @@
                 <div class="modal-actions">
                     <button id="login-submit-btn" class="btn btn-save">Đăng nhập</button>
                 </div>
-                <p class="login-hint">ID: TÊN viết HOA | Mật khẩu: 123456</p>
+                <p class="login-hint">ID: TÊN viết HOA (Trùng tên: ĐỦ HỌ TÊN CÓ DẤU) | MK: 123456</p>
             </div>
         </div>
     </div>
